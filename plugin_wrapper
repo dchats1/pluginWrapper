@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Get Arugments
+
+while getopts a:p:s:hd option; do
+	case $option in
+		a) args=$OPTARG;;
+		p) plugin=$OPTARG;;
+		s) service=$OPTARG;;
+		h) help=true;;
+		d) debug=true;;
+	esac
+done
+
+# Help
+
+if [[ $help == true ]]
+	then
+		echo "Usage: ./plugin_wrapper -a '[All arugments for plugin here]' -p [Plugin] -s [Service Check]"
+		exit
+fi
+
+# Get output of command
+
+cmd="$plugin $args"
+msg="$(./$cmd)"
+exitCode=$?
+
+# Debug Mode:
+
+if [[ $debug == true ]]
+	then
+		echo $cmd
+		echo $msg
+		echo $exitCode
+
+else
+	# Send data to check
+
+	echo ['date+%s'] "PROCESS_SERVICE_CHECK_RESULT;opsview;$service;$exitCode;$msg" > /usr/local/nagios/var/rw/nagios.cmd
+
+fi

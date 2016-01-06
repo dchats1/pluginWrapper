@@ -35,20 +35,10 @@ if [[ ! $service ]]
 		exit 2
 fi
 
-# Check to see if plugin exists
-
-#chkplugin=$(ls -l /usr/local/nagios/libexec/ | grep $plugin$ | grep nagios)
-
-#if [[ ! $chkplugin ]]
-#	then
-#		echo "Plugin doesn't exist, or is not owned by nagios"
-#		exit 2
-#fi
-
 # Help
 if [[ $help == true ]]
 	then
-		echo "Usage: ./plugin_wrapper -a '[All arugments for plugin here]' -p [Plugin] -s [Service Check]"
+		echo "Usage: ./plugin_wrapper -a '[All arugments for plugin here]' -p [Plugin] -s [Service Check] -H [hostname]"
 		exit
 fi
 
@@ -68,7 +58,7 @@ msg=$(eval $cmd)
 exitCode=$?
 
 
-#More debuging!!
+#More debuging
 if [[ $debug == true ]]
 	then
 		echo ''

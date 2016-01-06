@@ -2,41 +2,82 @@
 
 # Get Arugments
 
-while getopts a:p:s:hd option; do
+while getopts a:p:s:H:hd option; do
 	case $option in
 		a) args=$OPTARG;;
 		p) plugin=$OPTARG;;
 		s) service=$OPTARG;;
+		H) host=$OPTARG;;
 		h) help=true;;
 		d) debug=true;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 2;;
 	esac
 done
 
-# Help
+# Check args
+if [[ ! $args ]]
+	then	
+		echo 'No arguments specified'
+		exit 2
+fi
 
+if [[ ! $plugin ]]
+	then	
+		echo 'No plugin specified'
+		exit 2
+fi
+
+if [[ ! $service ]]
+	then	
+		echo 'No service checks specified'
+		exit 2
+fi
+
+# Check to see if plugin exists
+
+#chkplugin=$(ls -l /usr/local/nagios/libexec/ | grep $plugin$ | grep nagios)
+
+#if [[ ! $chkplugin ]]
+#	then
+#		echo "Plugin doesn't exist, or is not owned by nagios"
+#		exit 2
+#fi
+
+# Help
 if [[ $help == true ]]
 	then
 		echo "Usage: ./plugin_wrapper -a '[All arugments for plugin here]' -p [Plugin] -s [Service Check]"
 		exit
 fi
 
-# Get output of command
-
-cmd="$plugin $args"
-msg="$(./$cmd)"
-exitCode=$?
-
 # Debug Mode:
-
 if [[ $debug == true ]]
 	then
-		echo $cmd
-		echo $msg
-		echo $exitCode
-
-else
-	# Send data to check
-
-	echo ['date+%s'] "PROCESS_SERVICE_CHECK_RESULT;opsview;$service;$exitCode;$msg" > /usr/local/nagios/var/rw/nagios.cmd
-
+		echo ''
+		echo 'Plugin: ' $plugin
+		echo 'Arguments: ' $args
+		echo ''
+		echo 'Service check: ' $service
 fi
+
+# Get output of command
+cmd="/usr/local/nagios/libexec/$plugin $args"
+msg=$(eval $cmd)
+exitCode=$?
+
+
+#More debuging!!
+if [[ $debug == true ]]
+	then
+		echo ''
+		echo 'Command: ' $cmd
+		echo 'Command Output: ' $msg
+		echo 'Exit Code: ' $exitCode
+		echo ''
+fi
+
+# Send data to check
+
+echo ['date+%s'] "PROCESS_SERVICE_CHECK_RESULT;$host;$service;$exitCode;$msg" > /usr/local/nagios/var/rw/nagios.cmd
